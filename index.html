@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Happy Birthday NADA 💖</title>
+    <link rel="stylesheet" href="style.css?v=3" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Outfit:wght@300;400;600&family=Pacifico&display=swap"
+      rel="stylesheet"
+    />
+    <!-- GSAP for Animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  </head>
+
+  <body>
+    <!-- Background Audio -->
+    <audio id="bg-audio" loop preload="auto">
+      <source src="Kol_Hayaty.mp3" type="audio/mpeg" />
+    </audio>
+    <button id="audio-control" class="hidden">🎵 Play Music</button>
+
+    <!-- Floating Hearts Container -->
+    <div id="floating-hearts-container"></div>
+    <div class="stars-container" id="stars-container"></div>
+
+    <!-- Unlock Screen -->
+    <div id="unlock-screen">
+      <!-- Visual stand-in for the haptic pulse (always fires, even where Vibration API is missing) -->
+      <div id="unlock-pulse" class="unlock-pulse" aria-hidden="true"></div>
+      <div class="glass-panel">
+        <h1 class="unlock-title">Hi NADA 💖</h1>
+        <p>Enter our special date 💭</p>
+        <input
+          type="password"
+          id="password-input"
+          placeholder="DD-MM-YYYY"
+          autocomplete="off"
+          inputmode="numeric"
+        />
+        <button id="unlock-btn">Unlock 💖</button>
+        <p id="unlock-error" class="error-text"></p>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="main-content" class="hidden">
+      <!-- Landing Page -->
+      <section id="landing-page" class="section screen-height">
+        <h1 id="landing-text-1" class="cursive glowing-text">Hey NADA 💖</h1>
+        <h2 id="landing-text-2" class="outfit">
+          I made something just for you…
+        </h2>
+        <button id="surprise-btn" class="glow-button">
+          Click for your surprise 🎁
+        </button>
+      </section>
+
+      <!-- Birthday Popup Modal -->
+      <div id="birthday-popup" class="modal hidden">
+        <div class="modal-content glass-panel">
+          <button id="close-popup" class="close-btn">&times;</button>
+          <h1 class="cursive glowing-text highlight">
+            Happy Birthday NADA 🎂💖
+          </h1>
+          <img
+            src="img/10.jpg"
+            alt="NADA"
+            id="popup-image"
+            class="sticker-img"
+            width="720"
+            height="1280"
+            loading="eager"
+            decoding="async"
+          />
+          <p id="popup-typewriter" class="outfit typed-text"></p>
+        </div>
+      </div>
+
+      <!-- Name Animation Section -->
+      <section id="name-animation" class="section">
+        <div
+          class="name-container drop-font glowing-text"
+          style="flex-direction: column; align-items: center; gap: 0"
+        >
+          <div class="word" style="display: flex; gap: 10px">
+            <span class="letter">H</span><span class="letter">A</span
+            ><span class="letter">P</span><span class="letter">P</span
+            ><span class="letter">y</span>
+          </div>
+          <div class="word" style="display: flex; gap: 10px">
+            <span class="letter">B</span><span class="letter">I</span
+            ><span class="letter">R</span><span class="letter">T</span
+            ><span class="letter">H</span><span class="letter">D</span
+            ><span class="letter">A</span><span class="letter">Y</span>
+          </div>
+          <div class="word" style="display: flex; gap: 10px">
+            <span class="letter">N</span><span class="letter">A</span
+            ><span class="letter">D</span><span class="letter">A</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Heartbeat Section -->
+      <section id="heartbeat-section" class="section">
+        <div id="big-heart" class="beating-heart">💖</div>
+        <h2 class="outfit slide-up-text">This beats only for you 💖</h2>
+        <img
+          src="img/10.jpg"
+          alt="Love"
+          id="heartbeat-image"
+          class="sticker-img hidden mt-4"
+          width="720"
+          height="1280"
+          loading="lazy"
+          decoding="async"
+        />
+      </section>
+
+      <!-- Why I Love You Section -->
+      <section id="why-i-love-you" class="section">
+        <h2 class="cursive">Reasons why I love you</h2>
+        <button id="love-generator-btn" class="primary-button">
+          Why do I love you? 💭
+        </button>
+        <div id="love-message-box" class="glass-box hidden">
+          <p id="love-message-text" class="outfit"></p>
+        </div>
+      </section>
+
+      <!-- Gift Reveal Section -->
+      <section id="gift-reveal" class="section">
+        <h2 class="outfit">A special gift for U...</h2>
+        <div id="gift-box" class="gift-box-emoji">🎁</div>
+        <p id="gift-message" class="cursive hidden glowing-text">
+          هاي ندي 🫵🏼 مفروض اعمل مسج محترمه وبتاع بس انتي عارفه ان ولا في وقت ولا
+          في صحه بس مهما كان ورايا ايه و في ايه افضي عشان خاطر عيونك مش محتاجه
+          نقاش المهم يا ندي مش محتاج اني اعرفك غلاوتك في قلبي عامله ازاي ولا اني
+          اققعد اكتب كلام عشان اللي بينا عمرو ما يتوصف ولا كلام الدنيا يعبر عن
+          حبي ليكي يا ندي بجد كانت صدفه غريبه وانا كل ما احاول افتكر حصلا حصل
+          ايه ولا ازاي بقينا كدا مش بس اللي متأكد منو ان الصدفه دي وكل اللي حصل
+          دا عشان نوصل لبعض انا فجأه بقا في حياتي ركن اساسي اسمو ندي بصحي من
+          النوم اول حاجه ادخل شاتك اكلمك قبل ما انام بكون مكلمك بعمل اي حاجه
+          بسافر اي حاجه بتتغير في يومي بكون مكلمك حكيلك بجد انتي جميله وتحفه اوي
+          بجد انا لما بيوحشني بطلع صورتو واكلم فيه واحكيلو عن حالي وعن أحوالي
+          وعامل ايه😔 غلاوتك متتوصفش ربنا يخليكي ليا بجد حتي لما جه وعملتي اللي
+          عملتيه مجرد التفكير اني ابعد معرفتش مهانش عليا كل اللي بينا و تفكير في
+          نقطه انك هتزعلي وعارف هتكوني عامله ازاي مقجرش استحمل انك تزعلي في حاجه
+          فكرت فيها كتير بجد اني اقولهالك و كل ما احاول اقولك برجع اقول لا بلاش
+          بقالي شهور انا بحبك وبجد مش اللي هوا بقولها دايما لا انا بجد بحبك بس
+          مش بعرف اقولك عشان خايف من ان مجرد ما يبقا بينا حب بجد اكيد علاقتنا مش
+          هتبقا بنفس الشكل اللي احنا عايشينو واحنا كدا صحاب ولا مش صحاب بقا اغلي
+          الحبايب علي رأي إليسا ف برجع اقول يواد بلاش متضمنش رد فعلك ايه بردو بس
+          دي حقيقه بجد وعارف انك اكيد حاسه و عارفه بس عادي بقا نرجع لموضوعنا سنه
+          سعيده عليكي يا قلبي وربنا يخليكي ليا و تشيلي الزفت اللي في مناخيرك دا
+          كدا وتعقلي شويه ها!! بجد في كلام كتير لو قعدت احكي من النهارده للشهر
+          الجاي عن اللي في قلبي مش هيكفيكي والله بس بجد نفسي اجيلك بقا عشان اشوف
+          عيونك بجد هجيلك ان شاء الله بس يعني من الاخر بجد ربنا يخليكي ليا يروحي
+          وكل سنه وانتي طيبه 🫂
+
+          <br />Love U❤️❤️❤️🫂<br />
+          Happy birthday y 2lby 💗💗💗 💖<br /><br />🎀🎀🎀
+        </p>
+      </section>
+
+      <!-- Media / Memories Section -->
+      <section id="memories" class="section memories-section">
+        <h2 class="cursive pb-2 glowing-text">Our Memories 📸</h2>
+        <p class="outfit memories-sub">
+          Every picture, every little moment… I'll never forget it.
+        </p>
+        <p class="outfit memories-hint" id="memories-hint">
+          Tap any photo or video to view it full screen 💖
+        </p>
+        <!-- Cards are rendered by script.js from the MEDIA manifest -->
+        <div id="memories-grid" class="memories-grid"></div>
+      </section>
+
+      <!-- Lightbox / Full-screen media viewer -->
+      <div
+        id="lightbox"
+        class="lightbox hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Media viewer"
+      >
+        <button
+          id="lightbox-close"
+          class="lightbox-btn lightbox-close"
+          aria-label="Close viewer"
+        >
+          &times;
+        </button>
+        <button
+          id="lightbox-prev"
+          class="lightbox-btn lightbox-nav lightbox-prev"
+          aria-label="Previous item"
+        >
+          &#8249;
+        </button>
+        <button
+          id="lightbox-next"
+          class="lightbox-btn lightbox-nav lightbox-next"
+          aria-label="Next item"
+        >
+          &#8250;
+        </button>
+        <div class="lightbox-stage" id="lightbox-stage"></div>
+        <p class="lightbox-caption" id="lightbox-caption"></p>
+      </div>
+
+      <!-- Future With You Section -->
+      <section id="future-with-you" class="section">
+        <h2 class="cursive pb-2">Summary of our relationship</h2>
+        <div class="timeline">
+          <div class="timeline-line"></div>
+          <div class="timeline-item left">
+            <div class="card hover-glow">
+              <h3>👤</h3>
+              <p>Random addition</p>
+            </div>
+          </div>
+          <div class="timeline-item right">
+            <div class="card hover-glow">
+              <h3>🫡</h3>
+              <p>I'm embarrassed to send you msg...</p>
+            </div>
+          </div>
+          <div class="timeline-item left">
+            <div class="card hover-glow">
+              <h3>🫶</h3>
+              <p>Safe zone relationship...</p>
+            </div>
+          </div>
+          <div class="timeline-item right">
+            <div class="card hover-glow">
+              <h3>🫂</h3>
+              <p>Best friend...</p>
+            </div>
+          </div>
+          <div class="timeline-item left">
+            <div class="card hover-glow">
+              <h3>💕</h3>
+              <p>Basic part of my daily routine 💕</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- If I Could Section -->
+      <section id="if-i-could" class="section">
+        <div class="stagger-text">
+          <p class="stagger-line cursive">قدام عيونك لقيتني</p>
+          <p class="stagger-line outfit">بقول يارتني</p>
+          <br />
+          <p class="stagger-line cursive">أفضل معاككككك</p>
+          <br />
+          <p class="stagger-line cursive">وبتيجي دايما في بالي</p>
+          <p class="stagger-line outfit">معرفش مالي</p>
+          <p class="stagger-line outfit">من يوم لقاك</p>
+          <br />
+          <p class="stagger-line cursive">ولا ليل وياك بشتاق</p>
+          <p class="stagger-line outfit">وبتوه في كلام بقولك وشايلو جوايا</p>
+          <br />
+          <p class="stagger-line cursive">علي طول وياك علي طول</p>
+          <p class="stagger-line outfit">ولأخر يوم في عمري</p>
+          <p class="stagger-line outfit">هتبقا ويايا🫂</p>
+        </div>
+      </section>
+
+      <!-- Cute Character Guide Section -->
+      <section id="cute-character" class="section">
+        <h2 class="cursive pb-2" style="color: var(--primary)">
+          A message from me...
+        </h2>
+        <div class="teddy-container">
+          <div
+            class="teddy-emoji"
+            id="interactive-teddy"
+            style="cursor: pointer; transition: transform 0.2s"
+          >
+            🧸
+          </div>
+          <div class="chat-bubble">
+            <p id="teddy-message" class="outfit">Psst... Tap me! 💖</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Scroll Story Section -->
+      <section id="scroll-story" class="section tall-section">
+        <div
+          class="scroll-content"
+          style="text-align: center; max-width: 800px"
+        >
+          <h2
+            class="outfit story-line"
+            style="
+              font-size: 2.5rem;
+              line-height: 1.5;
+              font-weight: bold;
+              background: -webkit-linear-gradient(45deg, #ff6fa5, #c77dff);
+              -webkit-background-clip: text;
+              -webkit-text-fill-color: transparent;
+            "
+          >
+            I find a million new reasons to fall helplessly in love with you. 💖
+          </h2>
+          <h2
+            class="cursive story-line highlight glowing-text"
+            style="
+              font-size: 4rem;
+              margin-top: 3rem;
+              text-shadow: 0 0 20px rgba(230, 178, 35, 0.6);
+            "
+          >
+            U the one who makes my day better. ❤️
+          </h2>
+        </div>
+      </section>
+
+      <!-- Interactive Fun -->
+      <section id="interactive-fun" class="section">
+        <h2 class="cursive glowing-text">Do you love me?</h2>
+        <div class="btn-group">
+          <button id="yes-btn" class="primary-button">
+            Yes! absolutely 💖
+          </button>
+          <button id="no-btn" class="primary-button outline">No...</button>
+        </div>
+
+        <div id="teddy-popup" class="hidden mt-4" style="text-align: center">
+          <img
+            src="img/6.jpg"
+            alt="Love Sticker"
+            loading="lazy"
+            decoding="async"
+            width="720"
+            height="1280"
+            style="
+              max-width: 250px;
+              border-radius: 20px;
+              box-shadow: 0 8px 25px rgba(255, 111, 165, 0.4);
+              border: 3px solid var(--primary);
+            "
+          />
+        </div>
+
+        <div class="game-area mt-4">
+          <p class="outfit mb-2" style="font-size: 1.2rem">
+            Tap the mystery gifts to find my heart 🎁💖:
+          </p>
+          <div
+            id="hidden-heart-game"
+            class="glass-panel"
+            style="user-select: none"
+          >
+            <!-- JS will generate mystery boxes here -->
+          </div>
+          <p
+            id="game-reward"
+            class="hidden cursive glowing-text mt-4"
+            style="
+              font-size: 2.5rem;
+              color: #ff3366;
+              text-shadow: 0 0 15px rgba(255, 51, 102, 0.5);
+            "
+          >
+            You found my love! 💖
+          </p>
+        </div>
+      </section>
+
+      <!-- Final Emotional Section -->
+      <section id="emotional-section" class="section dim-bg">
+        <div class="emotional-text-container">
+          <p class="slow-fade cursive">No matter what happens…</p>
+          <p class="slow-fade outfit">
+            Your name engraved in my heart & mind💖
+          </p>
+        </div>
+      </section>
+
+      <!-- Final Ending -->
+      <section id="final-ending" class="section dark-ending">
+        <div class="ending-content">
+          <h1 class="cursive highlight glowing-text mb-2">
+            Once again… Happy Birthday Y ro7y💖
+          </h1>
+          <p class="outfit text-large">rbena y5leky lya y ro7y🫂🫂🫂</p>
+        </div>
+
+        <!-- Day Night Toggle floating button at the end or fixed -->
+        <button id="day-night-toggle" class="floating-toggle">
+          Switch to night 🌙
+        </button>
+
+        <!-- Last line of the site: sits on the ending's own 2.jpg background,
+             so the image is used exactly once and never repeated. -->
+        <footer class="site-footer">
+            <br><br><br><br>
+          <p class="outfit">developed by bebo💕</p>
+        </footer>
+      </section>
+
+
+    </div>
+
+    <!-- Custom Cursor -->
+    <div id="custom-cursor">💖</div>
+
+    <script src="script.js?v=3"></script>
+  </body>
+</html>

@@ -1,0 +1,1239 @@
+:root {
+    --primary: #ff6fa5;
+    --secondary: #ffd1dc;
+    --background: #fff5f8;
+    --accent: #c77dff;
+    --highlight: #f7c948;
+    --text-color: #333;
+    --glass-bg: rgba(255, 255, 255, 0.6);
+    --glass-border: rgba(255, 255, 255, 0.8);
+    --glass-shadow: 0 8px 32px 0 rgba(255, 111, 165, 0.2);
+}
+
+.night-mode {
+    --primary: #ff8fb6;
+    --secondary: #ffb3c6;
+    --background: #2a0a18;
+    --accent: #d39aff;
+    --highlight: #fbe083;
+    --text-color: #fff;
+    --glass-bg: rgba(0, 0, 0, 0.4);
+    --glass-border: rgba(255, 111, 165, 0.3);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    cursor: none; /* using custom cursor */
+}
+
+body, html {
+    width: 100%;
+    overflow-x: hidden;
+    background-color: var(--background);
+    color: var(--text-color);
+    font-family: 'Outfit', sans-serif;
+    transition: background-color 1s ease, color 1s ease;
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+}
+
+/* Touch devices never show a pointer cursor — restore native behaviour there */
+@media (hover: none), (pointer: coarse) {
+    * {
+        cursor: auto !important;
+    }
+
+    #custom-cursor {
+        display: none !important;
+    }
+}
+
+/* Real, focusable/typed controls always keep a pointer + visible caret */
+input,
+textarea,
+select,
+button,
+a,
+.lightbox-stage,
+#unlock-error {
+    cursor: auto;
+}
+
+button,
+a,
+input {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+/* Custom Cursor */
+#custom-cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 30px;
+    height: 30px;
+    font-size: 24px;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s;
+    filter: drop-shadow(0 0 5px var(--primary));
+    will-change: transform;
+}
+
+/* Typography */
+.cursive {
+    font-family: 'Dancing Script', cursive;
+}
+.drop-font {
+    font-family: 'Pacifico', cursive;
+}
+.outfit {
+    font-family: 'Outfit', sans-serif;
+}
+.glowing-text {
+    text-shadow: 0 0 10px var(--primary), 0 0 20px var(--secondary);
+}
+.highlight {
+    color: var(--highlight);
+    text-shadow: 0 0 10px var(--highlight);
+}
+.text-large {
+    font-size: 1.5rem;
+}
+
+/* Layouts */
+.section {
+    min-height: 80vh;
+    min-height: 80svh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(1.5rem, 5vw, 3rem) clamp(1rem, 4vw, 2rem);
+    text-align: center;
+    position: relative;
+    z-index: 10;
+}
+
+.screen-height {
+    min-height: 100vh;
+    min-height: 100dvh;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Glassmorphism */
+.glass-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: clamp(1.25rem, 5vw, 2rem);
+    box-shadow: var(--glass-shadow);
+    max-width: 90%;
+    margin: 0 auto;
+}
+
+/* backdrop-filter is the single most expensive effect on low-end phones */
+@media (max-width: 600px) {
+    .glass-panel {
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+    }
+}
+
+/* Unlock Screen */
+#unlock-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle, var(--secondary) 0%, var(--background) 100%);
+    z-index: 1000;
+    overflow: hidden;
+    padding: calc(1rem + env(safe-area-inset-top, 0px)) calc(1rem + env(safe-area-inset-right, 0px)) calc(1rem + env(safe-area-inset-bottom, 0px)) calc(1rem + env(safe-area-inset-left, 0px));
+    transition: opacity 0.4s ease;
+}
+
+/* Added by the unlock handler: the screen starts leaving on the very same frame
+   the site is revealed, and is fully gone after 0.4s — well before the site's
+   own fade-in settles, so the music is never sitting behind a visible panel. */
+#unlock-screen.is-leaving {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* The site wrapper fades itself in on reveal. `.is-entering` is added, the
+   wrapper is un-hidden, a reflow is forced, then the class is dropped — the
+   standard trick for animating out of `display: none`. */
+#main-content {
+    transition: opacity 0.9s ease;
+}
+
+#main-content.is-entering {
+    opacity: 0;
+}
+
+/* Visual stand-in for the vibration pulse: works everywhere, costs nothing */
+.unlock-pulse {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 120px;
+    height: 120px;
+    margin: -60px 0 0 -60px;
+    border-radius: 50%;
+    border: 3px solid var(--primary);
+    pointer-events: none;
+    opacity: 0;
+    z-index: 0;
+}
+
+.unlock-pulse.is-pulsing {
+    animation: unlockPulse 1.1s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}
+
+@keyframes unlockPulse {
+    0% {
+        opacity: 0.9;
+        transform: scale(0.35);
+        border-width: 6px;
+    }
+
+    100% {
+        opacity: 0;
+        transform: scale(4.2);
+        border-width: 1px;
+    }
+}
+
+.unlock-title {
+    font-family: 'Dancing Script', cursive;
+    color: var(--primary);
+    font-size: clamp(2.2rem, 10vw, 3rem);
+    margin-bottom: 1rem;
+    animation: heartbeat 1.5s infinite;
+}
+input[type="password"] {
+    display: block;
+    width: 100%;
+    margin: 1.5rem 0;
+    padding: 1rem;
+    border: 2px solid var(--primary);
+    border-radius: 15px;
+    outline: none;
+    font-size: 1.2rem;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.8);
+    font-family: 'Outfit';
+}
+#unlock-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    min-height: 48px;
+    border-radius: 25px;
+    font-size: 1.2rem;
+    font-family: 'Outfit';
+    box-shadow: 0 4px 15px rgba(255, 111, 165, 0.4);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+#unlock-btn:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 8px rgba(255, 111, 165, 0.5);
+}
+
+@media (hover: hover) {
+    #unlock-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 20px rgba(255, 111, 165, 0.6);
+    }
+}
+
+.error-text {
+    color: #e63946;
+    margin-top: 1rem;
+    min-height: 20px;
+    font-size: 0.95rem;
+}
+
+/* Floating Hearts Background */
+#floating-hearts-container {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 50; /* Bring above sections so they are clickable! */
+    overflow: hidden;
+}
+.floating-heart {
+    position: absolute;
+    bottom: -10%;
+    animation: floatUp 10s linear infinite;
+    font-size: 24px;
+    opacity: 0.8;
+    pointer-events: auto; /* allow clicking to burst */
+    will-change: transform, opacity;
+    contain: strict;
+}
+
+/* Landing Page Elements */
+#landing-page {
+    background: linear-gradient(135deg, var(--background) 0%, var(--secondary) 100%);
+}
+
+#landing-text-1 {
+    font-size: clamp(2.4rem, 13vw, 4rem);
+    margin-bottom: 1rem;
+}
+
+#landing-text-2 {
+    font-size: clamp(1.05rem, 5vw, 1.5rem);
+    margin-bottom: 2rem;
+    color: var(--accent);
+    max-width: 22ch;
+}
+
+.glow-button, .primary-button {
+    background: linear-gradient(45deg, var(--primary), var(--accent));
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    min-height: 48px;
+    border-radius: 30px;
+    font-size: 1.2rem;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(255, 111, 165, 0.5);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.glow-button:active, .primary-button:active {
+    transform: translateY(-1px) scale(0.97);
+}
+
+@media (hover: hover) {
+    .glow-button:hover, .primary-button:hover {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 8px 25px rgba(255, 111, 165, 0.8);
+    }
+
+    .primary-button.outline:hover {
+        background: var(--primary);
+        color: white;
+    }
+}
+
+.primary-button.outline {
+    background: transparent;
+    border: 2px solid var(--primary);
+    color: var(--primary);
+}
+
+/* Modal Popup */
+.modal {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+.modal-content {
+    position: relative;
+    max-width: 500px;
+    width: 90%;
+    text-align: center;
+}
+.close-btn {
+    position: absolute;
+    top: 10px; right: 15px;
+    font-size: 2rem;
+    background: none; border: none; color: var(--primary);
+    transition: transform 0.2s;
+}
+.close-btn:hover {
+    transform: scale(1.2);
+}
+.sticker-img {
+    width: 200px;
+    height: auto;
+    border-radius: 20px;
+    margin: 1.5rem 0;
+    box-shadow: 0 8px 25px rgba(255, 111, 165, 0.4);
+    border: 3px solid var(--primary);
+}
+.typed-text {
+    font-size: 1.2rem;
+    min-height: 2rem;
+}
+
+/* Name Animation */
+.name-container {
+    display: flex;
+    gap: 10px;
+    font-size: clamp(1.5rem, 9.5vw, 4rem);
+}
+.name-container .letter {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(20px);
+}
+@media (max-width: 600px) {
+    .name-container { font-size: clamp(1.5rem, 9.5vw, 2.6rem); }
+    .name-container .word { gap: 5px !important; }
+}
+
+/* Heartbeat */
+#big-heart {
+    font-size: 8rem;
+    animation: heartbeat 1s infinite alternate;
+    will-change: transform;
+}
+
+/* Generators & Cards */
+.glass-box {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+    max-width: 400px;
+    width: 100%;
+}
+.cards-container {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+/* Vertical Timeline */
+.timeline {
+    position: relative;
+    max-width: 800px;
+    margin: 3rem auto;
+    width: 100%;
+}
+.timeline-line {
+    position: absolute;
+    width: 6px;
+    background-color: var(--primary);
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    margin-left: -3px;
+    border-radius: 3px;
+    box-shadow: 0 0 10px var(--primary);
+    transform-origin: top;
+}
+.timeline-item {
+    padding: 10px 40px;
+    position: relative;
+    background-color: inherit;
+    width: 50%;
+}
+.timeline-item.left {
+    left: 0;
+}
+.timeline-item.right {
+    left: 50%;
+}
+.timeline-item::after {
+    content: '';
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    right: -13px;
+    background-color: white;
+    border: 4px solid var(--primary);
+    top: 50%;
+    transform: translateY(-50%);
+    border-radius: 50%;
+    z-index: 1;
+    box-shadow: 0 0 10px var(--primary);
+}
+.timeline-item.right::after {
+    left: -13px;
+}
+.timeline-item .card {
+    width: 100%;
+    margin: 0;
+}
+.card {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 2rem;
+    border-radius: 15px;
+    width: min(250px, 100%);
+    box-shadow: 0 8px 25px rgba(255, 111, 165, 0.3);
+    transition: all 0.3s;
+    border: 2px solid var(--primary);
+    color: #c9184a;
+    font-weight: 700;
+}
+.card p {
+    font-size: 1.2rem;
+}
+.hover-glow:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 30px var(--secondary);
+    border-color: var(--primary);
+}
+.card h3 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Gift Box */
+#gift-box {
+    font-size: clamp(4rem, 18vw, 6rem);
+    margin-top: 2rem;
+    transition: transform 0.3s;
+    cursor: pointer;
+}
+
+#gift-box:active {
+    transform: scale(0.94) rotate(-3deg);
+}
+
+@media (hover: hover) {
+    #gift-box:hover {
+        transform: scale(1.1) rotate(5deg);
+    }
+}
+
+/* Gift Section — 9.jpg is the fixed background of the WHOLE section.
+   Two layers only: ::before holds the photo (the only thing that is blurred),
+   ::after holds the readability scrim. Every descendant — heading, message,
+   gift box — is painted above both and therefore stays perfectly sharp. */
+#gift-reveal {
+    position: relative;
+    isolation: isolate; /* clips the -1/-2 layers inside this section only */
+    overflow: hidden; /* the blurred layer is overscanned; this trims its edge */
+    background-color: var(--background);
+}
+
+#gift-reveal::before {
+    content: "";
+    position: absolute;
+    inset: -4%; /* overscan so the blur never exposes a soft edge */
+    z-index: -2;
+    background-image: url('img/9.jpg');
+    background-size: cover;
+    background-position: center 22%;
+    background-repeat: no-repeat;
+    /* the image is anchored to the section, so it does not scroll or shift
+       while the content is displayed over it */
+    background-attachment: scroll;
+    transform: scale(1.02);
+    filter: blur(2px) saturate(1.06); /* blur applies to THIS layer only */
+    pointer-events: none;
+}
+
+#gift-reveal::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.88) 0%, rgba(255, 255, 255, 0.72) 34%, rgba(255, 255, 255, 0.86) 100%);
+    pointer-events: none;
+}
+
+/* Gift Message — text only, no background of its own any more */
+#gift-message {
+    position: relative;
+    width: 100%;
+    max-width: min(720px, 100%);
+    margin: 2rem auto 0;
+    padding: clamp(1.5rem, 5vw, 3rem) clamp(1.1rem, 4.5vw, 2.75rem);
+    border-radius: 26px;
+    line-height: 1.9;
+    font-size: clamp(1.05rem, 3.6vw, 1.4rem);
+    overflow-wrap: break-word;
+    word-break: break-word;
+    color: var(--text-color);
+    /* keep the original glow, but anchor the glyphs against the photo */
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8), 0 0 10px var(--primary), 0 0 20px var(--secondary);
+}
+
+/* the section heading sits on the photo too, so it needs the same anchor */
+#gift-reveal .section-title,
+#gift-reveal h2 {
+    text-shadow: 0 1px 3px rgba(255, 255, 255, 0.85), 0 0 12px var(--primary);
+}
+
+.night-mode #gift-message {
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85), 0 0 10px var(--primary), 0 0 20px var(--secondary);
+}
+
+.night-mode #gift-reveal::after {
+    background-image: linear-gradient(180deg, rgba(20, 6, 16, 0.8) 0%, rgba(20, 6, 16, 0.64) 34%, rgba(20, 6, 16, 0.78) 100%);
+}
+
+.night-mode #gift-reveal .section-title,
+.night-mode #gift-reveal h2 {
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85), 0 0 12px var(--primary);
+}
+
+/* Stagger Text */
+.stagger-text {
+    font-size: 1.5rem;
+    line-height: 2;
+}
+.stagger-line {
+    opacity: 0.1;
+}
+
+/* Character Guide */
+.teddy-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.teddy-emoji {
+    font-size: 5rem;
+    animation: float 3s ease-in-out infinite;
+}
+.chat-bubble {
+    background: white;
+    padding: 1rem 1.5rem;
+    border-radius: 20px;
+    border-bottom-left-radius: 0;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    color: var(--primary);
+    font-weight: 600;
+}
+.night-mode .chat-bubble {
+    background: var(--primary);
+    color: white;
+}
+
+/* Scroll Story */
+.tall-section {
+    height: 150vh;
+    justify-content: flex-start;
+    padding-top: 20vh;
+}
+.story-line {
+    font-size: 2rem;
+    margin-top: 2rem;
+    opacity: 0.2;
+}
+
+/* Interactive Fun */
+.btn-group {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    position: relative;
+    /* This allows absolute positioning of No button within bounds or screen */
+    min-height: 100px; 
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+#no-btn {
+    position: relative; /* Will change to absolute on hover in JS */
+}
+
+.game-area {
+    margin-top: 4rem;
+}
+#hidden-heart-game {
+    display: flex;
+    gap: 1rem;
+    font-size: 2.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 2rem;
+}
+.mystery-box {
+    cursor: pointer;
+    transition: transform 0.3s;
+    display: inline-block;
+    width: 65px;
+    height: 65px;
+    line-height: 65px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid var(--primary);
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(255, 111, 165, 0.3);
+}
+.night-mode .mystery-box {
+    background: rgba(0, 0, 0, 0.5);
+}
+.mystery-box:hover {
+    transform: scale(1.1) rotate(5deg);
+}
+.mystery-box.opened {
+    transform: scale(1.2);
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+    pointer-events: none;
+}
+
+/* ============================================================
+   MEMORIES / MEDIA SECTION
+   ============================================================ */
+.memories-section {
+    justify-content: flex-start;
+    padding-top: clamp(2.5rem, 8vw, 5rem);
+    padding-bottom: clamp(2.5rem, 8vw, 5rem);
+}
+
+.memories-section h2 {
+    font-size: clamp(2rem, 9vw, 3.2rem);
+    color: var(--primary);
+}
+
+.memories-sub {
+    font-size: clamp(0.95rem, 4vw, 1.15rem);
+    color: var(--accent);
+    max-width: 32ch;
+    margin-bottom: 0.5rem;
+}
+
+.memories-hint {
+    font-size: 0.85rem;
+    opacity: 0.7;
+    margin-bottom: 1.5rem;
+}
+
+.memories-hint.is-hidden {
+    display: none;
+}
+
+/* --- Grid: 1 full-bleed column on phones, more columns as space allows --- */
+.memories-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(0.9rem, 3.5vw, 1.4rem);
+    width: 100%;
+    max-width: 460px;
+    margin: 0 auto;
+    /* full-bleed on small screens: cancel the section's inline padding */
+    margin-inline: max(-1 * clamp(1rem, 4vw, 2rem), calc(50% - 50vw + clamp(1rem, 4vw, 2rem)));
+}
+
+.memory-card {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 9 / 16; /* normalises the 0.46 - 0.75 mix into one clean rhythm */
+    max-height: 78svh; /* keeps a single card ≈ one screenful on phones */
+    overflow: hidden;
+    border-radius: 20px;
+    border: 2px solid var(--primary);
+    background: linear-gradient(160deg, var(--glass-bg), var(--secondary));
+    box-shadow: 0 10px 28px rgba(255, 111, 165, 0.26);
+    padding: 0;
+    -webkit-user-select: none;
+    user-select: none;
+    /* skip rasterising off-screen media — big win once the grid gets long */
+    content-visibility: auto;
+    contain-intrinsic-size: auto 480px;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.night-mode .memory-card {
+    background: linear-gradient(160deg, var(--glass-bg), rgba(90, 20, 60, 0.55));
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55);
+}
+
+.memory-card:active {
+    transform: scale(0.975);
+    box-shadow: 0 4px 14px rgba(255, 111, 165, 0.4);
+}
+
+@media (hover: hover) {
+    .memory-card:hover {
+        transform: translateY(-4px) scale(1.015);
+        border-color: var(--accent);
+        box-shadow: 0 16px 40px rgba(255, 111, 165, 0.42);
+    }
+}
+
+/* keep it visible while GSAP animates it in */
+.memory-card.is-revealed {
+    content-visibility: visible;
+}
+
+.memory-card-img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 30%;
+    opacity: 0;
+    transition: opacity 0.45s ease;
+}
+
+.memory-card-img.is-loaded {
+    opacity: 1;
+}
+
+.memory-card-num {
+    position: absolute;
+    top: 10px;
+    left: 12px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: #fff;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+    opacity: 0.9;
+    pointer-events: none;
+}
+
+.memory-card-tag {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.85rem;
+    color: #fff;
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.85);
+    text-align: left;
+    pointer-events: none;
+}
+
+/* --- Video cards: no <video src> in the grid at all (nothing downloads until tapped) --- */
+.memory-card.is-video {
+    background: linear-gradient(160deg, var(--primary), var(--accent));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.memory-card-play {
+    position: relative;
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--primary);
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-left: 4px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
+    pointer-events: none;
+}
+
+.memory-card-duration {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 2px 8px;
+    border-radius: 10px;
+    pointer-events: none;
+}
+
+/* --- Lightbox --- */
+.lightbox {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    background: rgba(18, 6, 16, 0.96);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+}
+
+.lightbox-stage {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: calc(1rem + env(safe-area-inset-top, 0px)) 0 calc(3.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+.lightbox-stage img,
+.lightbox-stage video {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+    background: #12060f;
+}
+
+.lightbox-stage video[hidden],
+.lightbox-stage img[hidden] {
+    display: none;
+}
+
+.lightbox-caption {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: calc(0.9rem + env(safe-area-inset-bottom, 0px));
+    text-align: center;
+    color: rgba(255, 255, 255, 0.85);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.85rem;
+    padding: 0 3.5rem;
+    pointer-events: none;
+}
+
+.lightbox-btn {
+    position: absolute;
+    z-index: 2;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    line-height: 1;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.lightbox-close {
+    top: calc(0.75rem + env(safe-area-inset-top, 0px));
+    right: calc(0.75rem + env(safe-area-inset-right, 0px));
+    width: 46px;
+    height: 46px;
+    font-size: 2rem;
+}
+
+.lightbox-nav {
+    top: 50%;
+    transform: translateY(-50%);
+    width: 46px;
+    height: 46px;
+    font-size: 2.2rem;
+}
+
+.lightbox-prev {
+    left: calc(0.75rem + env(safe-area-inset-left, 0px));
+}
+
+.lightbox-next {
+    right: calc(0.75rem + env(safe-area-inset-right, 0px));
+}
+
+.lightbox-btn:active {
+    background: var(--primary);
+}
+
+@media (hover: hover) {
+    .lightbox-btn:hover {
+        background: var(--primary);
+    }
+}
+
+/* on phones the arrows are big swipe targets instead of visible buttons */
+@media (max-width: 600px) {
+    .lightbox-nav {
+        top: auto;
+        bottom: calc(0.6rem + env(safe-area-inset-bottom, 0px));
+        transform: none;
+        width: 52px;
+        height: 52px;
+    }
+
+    .lightbox-prev {
+        left: calc(1rem + env(safe-area-inset-left, 0px));
+    }
+
+    .lightbox-next {
+        right: calc(1rem + env(safe-area-inset-right, 0px));
+    }
+
+    .lightbox-caption {
+        bottom: calc(4.6rem + env(safe-area-inset-bottom, 0px));
+    }
+
+    .lightbox-stage {
+        padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
+    }
+}
+
+/* --- Memories responsive: phones 1 col, then scale up --- */
+@media (min-width: 560px) {
+    .memories-grid {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 640px;
+        margin-inline: auto;
+    }
+
+    .memory-card {
+        max-height: 56svh;
+        border-radius: 20px;
+    }
+}
+
+@media (min-width: 900px) {
+    .memories-grid {
+        grid-template-columns: repeat(3, 1fr);
+        max-width: 860px;
+    }
+
+    .memory-card {
+        max-height: 52svh;
+    }
+}
+
+@media (min-width: 1280px) {
+    .memories-grid {
+        grid-template-columns: repeat(4, 1fr);
+        max-width: 1180px;
+    }
+}
+
+/* ============================================================
+   ENDING
+   ============================================================ */
+.dim-bg {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.28)), url('img/8.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: scroll;
+}
+
+.night-mode .dim-bg {
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.58), rgba(0, 0, 0, 0.38)), url('img/8.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: scroll;
+}
+
+.emotional-text-container p {
+    font-size: clamp(1.3rem, 6vw, 2rem);
+    margin-bottom: 1rem;
+    text-shadow: 0 2px 8px rgba(255, 255, 255, 0.8);
+}
+
+.night-mode .emotional-text-container p {
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85);
+}
+
+/* 2.jpg is used here and ONLY here — the very last section of the page. */
+.dark-ending {
+    background-image: linear-gradient(rgba(10, 10, 10, 0.62), rgba(10, 10, 10, 0.9)), url('img/2.jpg');
+    background-color: #0a0a0a; /* fallback if the photo fails to load */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: scroll; /* anchored to the section: no scroll drift */
+    color: white;
+    /* room for the footer line pinned to the bottom of the section */
+    padding-bottom: clamp(5rem, 12vh, 8rem);
+}
+
+/* ============================================================
+   FOOTER
+   The last line of the whole site. It lives INSIDE the ending section
+   and is transparent, so it sits on that section's own 2.jpg background —
+   one image, never repeated, and no extra block of colour underneath.
+   ============================================================ */
+.site-footer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--secondary);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.9rem;
+    letter-spacing: 0.08em;
+    padding: 1.25rem 1rem calc(1.25rem + env(safe-area-inset-bottom, 0px));
+    overflow-wrap: break-word;
+    word-break: break-word;
+    pointer-events: none;
+}
+
+.site-footer p {
+    margin: 0;
+}
+
+.night-mode .site-footer {
+    color: var(--primary);
+}
+
+/* keep the two fixed controls clear of the footer line on tiny screens */
+@media (max-width: 360px) {
+    .site-footer {
+        font-size: 0.8rem;
+        padding-bottom: calc(3.5rem + env(safe-area-inset-bottom, 0px));
+    }
+}
+
+/* Floating toggles */
+.floating-toggle, #audio-control {
+    position: fixed;
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    z-index: 1000;
+    background: var(--glass-bg);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    padding: 10px 18px;
+    min-height: 44px;
+    border-radius: 20px;
+    font-family: 'Outfit';
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+#audio-control {
+    left: calc(16px + env(safe-area-inset-left, 0px));
+}
+.night-mode #audio-control {
+    color: white;
+}
+.floating-toggle {
+    right: calc(16px + env(safe-area-inset-right, 0px));
+}
+.night-mode .floating-toggle {
+    background: var(--primary);
+    color: white;
+}
+
+/* keep the two floating controls from colliding on narrow phones */
+@media (max-width: 360px) {
+    #audio-control,
+    .floating-toggle {
+        font-size: 0.8rem;
+        padding: 9px 12px;
+    }
+}
+
+
+/* Animations */
+@keyframes heartbeat {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.15); }
+}
+
+@keyframes floatUp {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(-110vh) rotate(360deg); opacity: 0; }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+}
+
+/* Utilities */
+.mb-2 { margin-bottom: 2rem; }
+.mt-4 { margin-top: 4rem; }
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #landing-text-1 { font-size: clamp(2.4rem, 13vw, 3.2rem); }
+    #big-heart { font-size: 6rem; }
+    .card { width: 100%; max-width: 300px; }
+    .tall-section { height: 130vh; height: 130svh; }
+}
+
+@media screen and (max-width: 600px) {
+  .timeline-line {
+    left: 31px;
+  }
+  .timeline-item {
+    width: 100%;
+    padding-left: 70px;
+    padding-right: 25px;
+  }
+  .timeline-item.right {
+    left: 0%;
+  }
+  .timeline-item.left::after {
+    left: 18px;
+  }
+  .timeline-item.right::after {
+    left: 18px;
+  }
+  .stagger-text {
+    font-size: 1.15rem;
+    line-height: 1.9;
+  }
+  .story-line {
+    font-size: 1.5rem;
+  }
+  .mystery-box {
+    width: 56px;
+    height: 56px;
+    line-height: 56px;
+    font-size: 2rem;
+  }
+}
+
+/* Tablet / desktop: give text-heavy sections a readable measure */
+@media (min-width: 768px) {
+    #landing-text-2,
+    .memories-sub {
+        max-width: none;
+    }
+}
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    #floating-hearts-container,
+    #custom-cursor {
+        display: none !important;
+    }
+
+    .memory-card,
+    .memory-card-img {
+        opacity: 1 !important;
+        transform: none !important;
+    }
+}
